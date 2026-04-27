@@ -1,24 +1,6 @@
 import { create } from "zustand";
 import { persist, createJSONStorage, devtools } from "zustand/middleware";
 
-// Theme Store
-const useThemeStore = create(
-    devtools(
-        persist(
-            (set) => ({
-                theme: "light",
-                setTheme: (mode) => set({ theme: mode }, false, "setTheme"),
-            }),
-            {
-                name: "theme",
-                storage: createJSONStorage(() => localStorage),
-            }
-        ),
-        { name: "userTheme" }
-    )
-);
-
-// Sheet Store
 const useSheetStore = create(
     devtools(
         persist(
@@ -35,4 +17,4 @@ const useSheetStore = create(
     )
 );
 
-export { useThemeStore, useSheetStore };
+export { useSheetStore };

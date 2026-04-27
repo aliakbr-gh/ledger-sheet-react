@@ -1,138 +1,14 @@
 import { useEffect, useState } from "react";
-import { useSheetStore, useThemeStore } from "./store";
-import html2canvas from "html2canvas";
-import Loader from "./Loader";
+import { useSheetStore } from "./store";
 
 function App() {
-  const { theme, setTheme } = useThemeStore();
+  const DEBUG = false;
   const { sheet, setSheet } = useSheetStore();
 
   const [dateTime, setDateTime] = useState({ date: "", time: "" });
-  const [loading, setLoading] = useState(false);
 
   const isPureNumber = (val) =>
     typeof val === "number" || /^\d+(\.\d+)?$/.test(val);
-
-  const handleDownloadAsFile = async () => {
-    try {
-      setLoading(true);
-
-      // Hide all buttons before screenshot
-      const buttons = document.querySelectorAll("button");
-      buttons.forEach((btn) => (btn.style.display = "none"));
-
-      const labels = document.querySelectorAll("label");
-      labels.forEach((lbl) => (lbl.style.display = "none"));
-
-      const element = document.body;
-
-      const canvas = await html2canvas(element, {
-        useCORS: true,
-        scale: 2,
-        windowWidth: document.documentElement.scrollWidth,
-        windowHeight: document.documentElement.scrollHeight,
-      });
-
-      const link = document.createElement("a");
-      link.download = `Sheet-${dateTime.date}-${dateTime.time.replace(
-        /:/g,
-        "-"
-      )}.png`;
-      link.href = canvas.toDataURL("image/png");
-      link.click();
-    } catch (error) {
-      console.log("Error while downloadCSV", error);
-    } finally {
-      // Show buttons again after screenshot
-      const buttons = document.querySelectorAll("button");
-      buttons.forEach((btn) => (btn.style.display = ""));
-
-      const labels = document.querySelectorAll("label");
-      labels.forEach((lbl) => (lbl.style.display = ""));
-
-      setLoading(false);
-    }
-  };
-
-  const jsonToCSV = (obj) => {
-    const entries = Object.entries(obj);
-    let csv = "key,value\n";
-    for (const [key, value] of entries) {
-      let val = typeof value === "object" ? JSON.stringify(value) : value;
-      csv += `"${key}","${val}"\n`;
-    }
-    return csv;
-  };
-
-  const downloadCSV = () => {
-    if (!sheet) return alert("No sheet data available.");
-    try {
-      setLoading(true);
-      const csv = jsonToCSV(sheet);
-      const blob = new Blob([csv], { type: "text/csv" });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = `Sheet-${dateTime.date}-${dateTime.time.replace(
-        /:/g,
-        "-"
-      )}.csv`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    } catch (error) {
-      console.log("Error while downloadCSV", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleFileUpload = (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    try {
-      setLoading(true);
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        const content = event.target.result;
-        const extension = file.name.split(".").pop();
-
-        if (extension === "csv") {
-          const parsed = parseCSV(content);
-          setSheet(parsed);
-        } else if (extension === "sql") {
-          const parsed = parseSQL(content);
-          setSheet(parsed);
-        } else {
-          alert("Unsupported file type.");
-        }
-      };
-      reader.readAsText(file);
-    } catch (error) {
-      console.log("Error while handleFileUpload", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const parseCSV = (csv) => {
-    const lines = csv.trim().split("\n");
-    const result = {};
-
-    for (let i = 1; i < lines.length; i++) {
-      const [key, val] = lines[i].split(/,(.+)/); // handle values with commas
-      try {
-        result[key.replace(/(^"|"$)/g, "")] = JSON.parse(
-          val.replace(/(^"|"$)/g, "")
-        );
-      } catch {
-        result[key.replace(/(^"|"$)/g, "")] = val.replace(/(^"|"$)/g, "");
-      }
-    }
-
-    return result;
-  };
 
   useEffect(() => {
     const getDateTime = () => {
@@ -448,28 +324,6 @@ function App() {
     }, 0);
   };
 
-  const getTotalCashInfo = () => {
-    const totalCashFromDenominations = getTotalCashToday();
-    const totalEasyPaisaSending = getTotalEasyPaisaSending();
-    const totalJazzCashSending = getTotalJazzCashSending();
-    const totalEPAccountSending = getTotalEPAccountSending();
-    const totalJCAccountSending = getTotalJCAccountSending();
-    const totalRecovery = getTotalRecovery();
-    const totalCards = getTotalCards() * 100;
-    const totalELoad = getTotalELoad() - getTotalBorrowed();
-    return (
-      totalCashFromDenominations +
-      totalEasyPaisaSending +
-      totalJazzCashSending +
-      totalEPAccountSending +
-      totalJCAccountSending +
-      totalRecovery +
-      totalCards +
-      totalELoad +
-      (sheet?.extra || 0)
-    );
-  };
-
   const getTotalCashToday = () => {
     return (
       (sheet?.cash5000 || 0) * 5000 +
@@ -499,12 +353,8 @@ function App() {
 
   return (
     <div>
-      {loading && <Loader />}
-      <div
-        className={`container ${theme === "dark" ? "dark-mode" : "light-mode"}`}
-      >
-        {/* For Debug */}
-        {sheet &&
+      <div className="container">
+        {DEBUG &&
           Object.entries(sheet).map(([key, value]) => (
             <pre key={key}>
               <strong>{key}:</strong>{" "}
@@ -519,12 +369,7 @@ function App() {
             <p id="current-date">{dateTime.date}</p>
             <p id="current-time">{dateTime.time}</p>
             <div className="actions">
-              {/* <button id="theme-toggle" className="button" onClick={() => setTheme(theme === "light" ? "dark" : "light")}>
-                Change Theme to {theme === "dark" ? "Light" : "Dark"}
-              </button> */}
-              <button className="button" onClick={handleDownloadAsFile}>
-                Save Print
-              </button>
+              <button className="button">Save Print</button>
               <button className="button-danger" onClick={() => setSheet(null)}>
                 Clear Sheet
               </button>

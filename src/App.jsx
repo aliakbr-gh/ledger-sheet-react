@@ -7,33 +7,37 @@ function App() {
   const { theme, setTheme } = useThemeStore();
   const { sheet, setSheet } = useSheetStore();
 
-  const [dateTime, setDateTime] = useState({ date: '', time: '' });
+  const [dateTime, setDateTime] = useState({ date: "", time: "" });
   const [loading, setLoading] = useState(false);
 
-  const isPureNumber = (val) => typeof val === 'number' || (/^\d+(\.\d+)?$/.test(val));
+  const isPureNumber = (val) =>
+    typeof val === "number" || /^\d+(\.\d+)?$/.test(val);
 
   const handleDownloadAsFile = async () => {
     try {
       setLoading(true);
-  
+
       // Hide all buttons before screenshot
       const buttons = document.querySelectorAll("button");
-      buttons.forEach(btn => btn.style.display = "none");
+      buttons.forEach((btn) => (btn.style.display = "none"));
 
       const labels = document.querySelectorAll("label");
-      labels.forEach(lbl => lbl.style.display = "none");
-  
+      labels.forEach((lbl) => (lbl.style.display = "none"));
+
       const element = document.body;
-  
+
       const canvas = await html2canvas(element, {
         useCORS: true,
         scale: 2,
         windowWidth: document.documentElement.scrollWidth,
         windowHeight: document.documentElement.scrollHeight,
       });
-  
+
       const link = document.createElement("a");
-      link.download = `Sheet-${dateTime.date}-${dateTime.time.replace(/:/g, '-')}.png`;
+      link.download = `Sheet-${dateTime.date}-${dateTime.time.replace(
+        /:/g,
+        "-"
+      )}.png`;
       link.href = canvas.toDataURL("image/png");
       link.click();
     } catch (error) {
@@ -41,11 +45,11 @@ function App() {
     } finally {
       // Show buttons again after screenshot
       const buttons = document.querySelectorAll("button");
-      buttons.forEach(btn => btn.style.display = "");
+      buttons.forEach((btn) => (btn.style.display = ""));
 
       const labels = document.querySelectorAll("label");
-      labels.forEach(lbl => lbl.style.display = "");
-  
+      labels.forEach((lbl) => (lbl.style.display = ""));
+
       setLoading(false);
     }
   };
@@ -69,7 +73,10 @@ function App() {
       const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = url;
-      link.download = `Sheet-${dateTime.date}-${dateTime.time.replace(/:/g, '-')}.csv`;
+      link.download = `Sheet-${dateTime.date}-${dateTime.time.replace(
+        /:/g,
+        "-"
+      )}.csv`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -89,7 +96,7 @@ function App() {
       const reader = new FileReader();
       reader.onload = (event) => {
         const content = event.target.result;
-        const extension = file.name.split('.').pop();
+        const extension = file.name.split(".").pop();
 
         if (extension === "csv") {
           const parsed = parseCSV(content);
@@ -104,7 +111,6 @@ function App() {
       reader.readAsText(file);
     } catch (error) {
       console.log("Error while handleFileUpload", error);
-
     } finally {
       setLoading(false);
     }
@@ -117,7 +123,9 @@ function App() {
     for (let i = 1; i < lines.length; i++) {
       const [key, val] = lines[i].split(/,(.+)/); // handle values with commas
       try {
-        result[key.replace(/(^"|"$)/g, "")] = JSON.parse(val.replace(/(^"|"$)/g, ""));
+        result[key.replace(/(^"|"$)/g, "")] = JSON.parse(
+          val.replace(/(^"|"$)/g, "")
+        );
       } catch {
         result[key.replace(/(^"|"$)/g, "")] = val.replace(/(^"|"$)/g, "");
       }
@@ -129,15 +137,25 @@ function App() {
   useEffect(() => {
     const getDateTime = () => {
       const now = new Date();
-      const options = { weekday: 'long', year: 'numeric', month: '2-digit', day: '2-digit' };
-      const formattedDate = now.toLocaleDateString('en-GB', options).replace(/\//g, '-');
+      const options = {
+        weekday: "long",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+      };
+      const formattedDate = now
+        .toLocaleDateString("en-GB", options)
+        .replace(/\//g, "-");
 
       let hours = now.getHours();
-      const minutes = String(now.getMinutes()).padStart(2, '0');
-      const seconds = String(now.getSeconds()).padStart(2, '0');
-      const ampm = hours >= 12 ? 'PM' : 'AM';
+      const minutes = String(now.getMinutes()).padStart(2, "0");
+      const seconds = String(now.getSeconds()).padStart(2, "0");
+      const ampm = hours >= 12 ? "PM" : "AM";
       hours = hours % 12 || 12;
-      const formattedTime = `${String(hours).padStart(2, '0')}:${minutes}:${seconds} ${ampm}`;
+      const formattedTime = `${String(hours).padStart(
+        2,
+        "0"
+      )}:${minutes}:${seconds} ${ampm}`;
 
       setDateTime({ date: formattedDate, time: formattedTime });
     };
@@ -157,33 +175,35 @@ function App() {
 
   const eLoadSell = (network) => {
     return (
-      ((sheet?.[`${network}OpeningBalance`] || 0) +
-        (sheet?.[`${network}NewBalance`] || 0) +
-        (sheet?.[`${network}ReversalBalance`] || 0)) - (sheet?.[`${network}ClosingBalance`] || 0)
+      (sheet?.[`${network}OpeningBalance`] || 0) +
+      (sheet?.[`${network}NewBalance`] || 0) +
+      (sheet?.[`${network}ReversalBalance`] || 0) -
+      (sheet?.[`${network}ClosingBalance`] || 0)
     );
   };
 
   const getTotalCards = () => {
-    return (
-      (sheet?.totalCards || 0) - (sheet?.sellCards || 0)
-    )
-  }
+    return (sheet?.totalCards || 0) - (sheet?.sellCards || 0);
+  };
 
   const getTotalELoad = () => {
     return (
-      eLoadSell("telenor") + eLoadSell("jazz") + eLoadSell("ufone") + eLoadSell("zong")
+      eLoadSell("telenor") +
+      eLoadSell("jazz") +
+      eLoadSell("ufone") +
+      eLoadSell("zong")
     );
   };
 
   const getTotalAccountBalance = (AccNo) => {
     return (
       (sheet?.[`deposit${AccNo}`] || 0) +
-      (sheet?.[`accountBalance${AccNo}`] || 0))
+      (sheet?.[`accountBalance${AccNo}`] || 0)
+    );
   };
 
   const getRemainingAccountBalance = (AccNo) => {
-    return (
-      getTotalAccountBalance(AccNo) - (sheet?.[`withdrawl${AccNo}`] || 0))
+    return getTotalAccountBalance(AccNo) - (sheet?.[`withdrawl${AccNo}`] || 0);
   };
 
   const updateBorrowEntry = (index, field, value) => {
@@ -354,7 +374,6 @@ function App() {
     return null; // If no match found
   };
 
-
   const updateJCAccountEntry = (index, field, value) => {
     const updatedJCAccount = [...(sheet?.jcaccount || [])];
     updatedJCAccount[index] = { ...updatedJCAccount[index], [field]: value };
@@ -393,7 +412,10 @@ function App() {
 
   const updateManualPurchasingEntry = (index, field, value) => {
     const updatedManualPurchasing = [...(sheet?.manualpurchsing || [])];
-    updatedManualPurchasing[index] = { ...updatedManualPurchasing[index], [field]: value };
+    updatedManualPurchasing[index] = {
+      ...updatedManualPurchasing[index],
+      [field]: value,
+    };
     setSheet({ ...sheet, manualpurchsing: updatedManualPurchasing });
   };
 
@@ -411,7 +433,7 @@ function App() {
       getTotalEPAccountReceiving() +
       getTotalJCAccountReceiving() +
       getTotalManualPurchasing()
-    )
+    );
   };
 
   const updateRedbookEntry = (index, field, value) => {
@@ -450,26 +472,45 @@ function App() {
 
   const getTotalCashToday = () => {
     return (
-      ((sheet?.cash5000 || 0) * 5000) +
-      ((sheet?.cash1000 || 0) * 1000) +
-      ((sheet?.cash500 || 0) * 500) +
-      ((sheet?.cash100 || 0) * 100) +
-      ((sheet?.cash50 || 0) * 50) +
-      ((sheet?.cash20 || 0) * 20) +
-      ((sheet?.cash10 || 0) * 10) +
-      ((sheet?.cash5 || 0) * 5)
-    )
-  }
+      (sheet?.cash5000 || 0) * 5000 +
+      (sheet?.cash1000 || 0) * 1000 +
+      (sheet?.cash500 || 0) * 500 +
+      (sheet?.cash100 || 0) * 100 +
+      (sheet?.cash50 || 0) * 50 +
+      (sheet?.cash20 || 0) * 20 +
+      (sheet?.cash10 || 0) * 10 +
+      (sheet?.cash5 || 0) * 5
+    );
+  };
+
+  const getCashInfoTotal = () => {
+    return (
+      getTotalOmniSending() +
+      getTotalEasyPaisaSending() +
+      getTotalJazzCashSending() +
+      getTotalEPAccountSending() +
+      getTotalJCAccountSending() +
+      getTotalRecovery() +
+      getTotalCards() * 100 +
+      (getTotalELoad() - getTotalBorrowed()) +
+      (sheet?.extra || 0)
+    );
+  };
+
   return (
     <div>
       {loading && <Loader />}
-      <div className={`container ${theme === 'dark' ? 'dark-mode' : 'light-mode'}`}>
+      <div
+        className={`container ${theme === "dark" ? "dark-mode" : "light-mode"}`}
+      >
         {/* For Debug */}
-        {/* {sheet && Object.entries(sheet).map(([key, value]) => (
-        <pre key={key}>
-          <strong>{key}:</strong> {typeof value === 'object' ? JSON.stringify(value) : value}
-        </pre>
-      ))} */}
+        {sheet &&
+          Object.entries(sheet).map(([key, value]) => (
+            <pre key={key}>
+              <strong>{key}:</strong>{" "}
+              {typeof value === "object" ? JSON.stringify(value) : value}
+            </pre>
+          ))}
         <div className="header">
           <div className="title-container">
             <h1>KMK Communication</h1>
@@ -478,16 +519,14 @@ function App() {
             <p id="current-date">{dateTime.date}</p>
             <p id="current-time">{dateTime.time}</p>
             <div className="actions">
-              <button id="theme-toggle" className="button" onClick={() => setTheme(theme === "light" ? "dark" : "light")}>
+              {/* <button id="theme-toggle" className="button" onClick={() => setTheme(theme === "light" ? "dark" : "light")}>
                 Change Theme to {theme === "dark" ? "Light" : "Dark"}
+              </button> */}
+              <button className="button" onClick={handleDownloadAsFile}>
+                Save Print
               </button>
-              <button className="button" onClick={handleDownloadAsFile}>Save for Print</button>
-              <button className="button" onClick={downloadCSV}>Save CSV</button>
-              <label for="file-upload" class="button" >Upload CSV</label>
-              <input id="file-upload" type="file" onChange={handleFileUpload} />
-              <button className="button">Sync</button>
               <button className="button-danger" onClick={() => setSheet(null)}>
-                Clear
+                Clear Sheet
               </button>
             </div>
           </div>
@@ -512,28 +551,48 @@ function App() {
                         <input
                           type="number"
                           value={sheet?.telenorOpeningBalance || ""}
-                          onChange={(e) => setSheet({ ...sheet, telenorOpeningBalance: +e.target.value })}
+                          onChange={(e) =>
+                            setSheet({
+                              ...sheet,
+                              telenorOpeningBalance: +e.target.value,
+                            })
+                          }
                         />
                       </td>
                       <td>
                         <input
                           type="number"
                           value={sheet?.jazzOpeningBalance || ""}
-                          onChange={(e) => setSheet({ ...sheet, jazzOpeningBalance: +e.target.value })}
+                          onChange={(e) =>
+                            setSheet({
+                              ...sheet,
+                              jazzOpeningBalance: +e.target.value,
+                            })
+                          }
                         />
                       </td>
                       <td>
                         <input
                           type="number"
                           value={sheet?.ufoneOpeningBalance || ""}
-                          onChange={(e) => setSheet({ ...sheet, ufoneOpeningBalance: +e.target.value })}
+                          onChange={(e) =>
+                            setSheet({
+                              ...sheet,
+                              ufoneOpeningBalance: +e.target.value,
+                            })
+                          }
                         />
                       </td>
                       <td>
                         <input
                           type="number"
                           value={sheet?.zongOpeningBalance || ""}
-                          onChange={(e) => setSheet({ ...sheet, zongOpeningBalance: +e.target.value })}
+                          onChange={(e) =>
+                            setSheet({
+                              ...sheet,
+                              zongOpeningBalance: +e.target.value,
+                            })
+                          }
                         />
                       </td>
                     </tr>
@@ -543,28 +602,48 @@ function App() {
                         <input
                           type="number"
                           value={sheet?.telenorNewBalance || ""}
-                          onChange={(e) => setSheet({ ...sheet, telenorNewBalance: +e.target.value })}
+                          onChange={(e) =>
+                            setSheet({
+                              ...sheet,
+                              telenorNewBalance: +e.target.value,
+                            })
+                          }
                         />
                       </td>
                       <td>
                         <input
                           type="number"
                           value={sheet?.jazzNewBalance || ""}
-                          onChange={(e) => setSheet({ ...sheet, jazzNewBalance: +e.target.value })}
+                          onChange={(e) =>
+                            setSheet({
+                              ...sheet,
+                              jazzNewBalance: +e.target.value,
+                            })
+                          }
                         />
                       </td>
                       <td>
                         <input
                           type="number"
                           value={sheet?.ufoneNewBalance || ""}
-                          onChange={(e) => setSheet({ ...sheet, ufoneNewBalance: +e.target.value })}
+                          onChange={(e) =>
+                            setSheet({
+                              ...sheet,
+                              ufoneNewBalance: +e.target.value,
+                            })
+                          }
                         />
                       </td>
                       <td>
                         <input
                           type="number"
                           value={sheet?.zongNewBalance || ""}
-                          onChange={(e) => setSheet({ ...sheet, zongNewBalance: +e.target.value })}
+                          onChange={(e) =>
+                            setSheet({
+                              ...sheet,
+                              zongNewBalance: +e.target.value,
+                            })
+                          }
                         />
                       </td>
                     </tr>
@@ -574,62 +653,130 @@ function App() {
                         <input
                           type="number"
                           value={sheet?.telenorReversalBalance || ""}
-                          onChange={(e) => setSheet({ ...sheet, telenorReversalBalance: +e.target.value })}
+                          onChange={(e) =>
+                            setSheet({
+                              ...sheet,
+                              telenorReversalBalance: +e.target.value,
+                            })
+                          }
                         />
                       </td>
                       <td>
                         <input
                           type="number"
                           value={sheet?.jazzReversalBalance || ""}
-                          onChange={(e) => setSheet({ ...sheet, jazzReversalBalance: +e.target.value })}
+                          onChange={(e) =>
+                            setSheet({
+                              ...sheet,
+                              jazzReversalBalance: +e.target.value,
+                            })
+                          }
                         />
                       </td>
                       <td>
                         <input
                           type="number"
                           value={sheet?.ufoneReversalBalance || ""}
-                          onChange={(e) => setSheet({ ...sheet, ufoneReversalBalance: +e.target.value })}
+                          onChange={(e) =>
+                            setSheet({
+                              ...sheet,
+                              ufoneReversalBalance: +e.target.value,
+                            })
+                          }
                         />
                       </td>
                       <td>
                         <input
                           type="number"
                           value={sheet?.zongReversalBalance || ""}
-                          onChange={(e) => setSheet({ ...sheet, zongReversalBalance: +e.target.value })}
+                          onChange={(e) =>
+                            setSheet({
+                              ...sheet,
+                              zongReversalBalance: +e.target.value,
+                            })
+                          }
                         />
                       </td>
                     </tr>
                     <tr>
                       <td>Total Rs</td>
-                      <td><input type="number" disabled value={getTotalBalance("telenor")} /></td>
-                      <td><input type="number" disabled value={getTotalBalance("jazz")} /></td>
-                      <td><input type="number" disabled value={getTotalBalance("ufone")} /></td>
-                      <td><input type="number" disabled value={getTotalBalance("zong")} /></td>
+                      <td>
+                        <input
+                          type="number"
+                          disabled
+                          value={getTotalBalance("telenor")}
+                        />
+                      </td>
+                      <td>
+                        <input
+                          type="number"
+                          disabled
+                          value={getTotalBalance("jazz")}
+                        />
+                      </td>
+                      <td>
+                        <input
+                          type="number"
+                          disabled
+                          value={getTotalBalance("ufone")}
+                        />
+                      </td>
+                      <td>
+                        <input
+                          type="number"
+                          disabled
+                          value={getTotalBalance("zong")}
+                        />
+                      </td>
                     </tr>
                     <tr>
                       <td>Closing Balance</td>
                       <td>
-                        <input type="number"
+                        <input
+                          type="number"
                           value={sheet?.telenorClosingBalance || ""}
-                          onChange={(e) => setSheet({ ...sheet, telenorClosingBalance: +e.target.value })}
+                          onChange={(e) =>
+                            setSheet({
+                              ...sheet,
+                              telenorClosingBalance: +e.target.value,
+                            })
+                          }
                         />
                       </td>
                       <td>
-                        <input type="number"
+                        <input
+                          type="number"
                           value={sheet?.jazzClosingBalance || ""}
-                          onChange={(e) => setSheet({ ...sheet, jazzClosingBalance: +e.target.value })}
+                          onChange={(e) =>
+                            setSheet({
+                              ...sheet,
+                              jazzClosingBalance: +e.target.value,
+                            })
+                          }
                         />
                       </td>
                       <td>
-                        <input type="number"
+                        <input
+                          type="number"
                           value={sheet?.ufoneClosingBalance || ""}
-                          onChange={(e) => setSheet({ ...sheet, ufoneClosingBalance: +e.target.value })}
+                          onChange={(e) =>
+                            setSheet({
+                              ...sheet,
+                              ufoneClosingBalance: +e.target.value,
+                            })
+                          }
                         />
                       </td>
                       <td>
-                        <input type="number"
+                        <input
+                          type="number"
                           value={sheet?.zongClosingBalance || ""}
-                          onChange={(e) => setSheet({ ...sheet, zongClosingBalance: +e.target.value })}
+                          onChange={(e) =>
+                            setSheet({
+                              ...sheet,
+                              zongClosingBalance: +e.target.value,
+                            })
+                          }
                         />
                       </td>
                     </tr>
@@ -637,39 +784,49 @@ function App() {
                       <td>Total ELoad Sell</td>
                       <td>
                         <input
-                          type="number" disabled
+                          type="number"
+                          disabled
                           value={
-                            ((sheet?.telenorOpeningBalance || 0) +
-                              (sheet?.telenorNewBalance || 0) +
-                              (sheet?.telenorReversalBalance || 0)) - (sheet?.telenorClosingBalance || 0)
+                            (sheet?.telenorOpeningBalance || 0) +
+                            (sheet?.telenorNewBalance || 0) +
+                            (sheet?.telenorReversalBalance || 0) -
+                            (sheet?.telenorClosingBalance || 0)
                           }
                         />
-                      </td>
-                      <td>
-                        <input type="number" disabled
-                          value={
-                            ((sheet?.jazzOpeningBalance || 0) +
-                              (sheet?.jazzNewBalance || 0) +
-                              (sheet?.jazzReversalBalance || 0)) - (sheet?.jazzClosingBalance || 0)
-                          } />
                       </td>
                       <td>
                         <input
                           type="number"
                           disabled
                           value={
-                            ((sheet?.ufoneOpeningBalance || 0) +
-                              (sheet?.ufoneNewBalance || 0) +
-                              (sheet?.ufoneReversalBalance || 0)) - (sheet?.ufoneClosingBalance || 0)
+                            (sheet?.jazzOpeningBalance || 0) +
+                            (sheet?.jazzNewBalance || 0) +
+                            (sheet?.jazzReversalBalance || 0) -
+                            (sheet?.jazzClosingBalance || 0)
                           }
                         />
                       </td>
                       <td>
-                        <input type="number" disabled
+                        <input
+                          type="number"
+                          disabled
                           value={
-                            ((sheet?.zongOpeningBalance || 0) +
-                              (sheet?.zongNewBalance || 0) +
-                              (sheet?.zongReversalBalance || 0)) - (sheet?.zongClosingBalance || 0)
+                            (sheet?.ufoneOpeningBalance || 0) +
+                            (sheet?.ufoneNewBalance || 0) +
+                            (sheet?.ufoneReversalBalance || 0) -
+                            (sheet?.ufoneClosingBalance || 0)
+                          }
+                        />
+                      </td>
+                      <td>
+                        <input
+                          type="number"
+                          disabled
+                          value={
+                            (sheet?.zongOpeningBalance || 0) +
+                            (sheet?.zongNewBalance || 0) +
+                            (sheet?.zongReversalBalance || 0) -
+                            (sheet?.zongClosingBalance || 0)
                           }
                         />
                       </td>
@@ -687,25 +844,41 @@ function App() {
                     <tr>
                       <td>Telenor</td>
                       <td>
-                        <input type="number" disabled value={eLoadSell("telenor")} />
+                        <input
+                          type="number"
+                          disabled
+                          value={eLoadSell("telenor")}
+                        />
                       </td>
                     </tr>
                     <tr>
                       <td>Jazz</td>
                       <td>
-                        <input type="number" disabled value={eLoadSell("jazz")} />
+                        <input
+                          type="number"
+                          disabled
+                          value={eLoadSell("jazz")}
+                        />
                       </td>
                     </tr>
                     <tr>
                       <td>Ufone</td>
                       <td>
-                        <input type="number" disabled value={eLoadSell("ufone")} />
+                        <input
+                          type="number"
+                          disabled
+                          value={eLoadSell("ufone")}
+                        />
                       </td>
                     </tr>
                     <tr>
                       <td>Zong</td>
                       <td>
-                        <input type="number" disabled value={eLoadSell("zong")} />
+                        <input
+                          type="number"
+                          disabled
+                          value={eLoadSell("zong")}
+                        />
                       </td>
                     </tr>
                     <tr>
@@ -717,7 +890,11 @@ function App() {
                     <tr>
                       <td>AD</td>
                       <td>
-                        <input type="number" disabled value={getTotalBorrowed()} />
+                        <input
+                          type="number"
+                          disabled
+                          value={getTotalBorrowed()}
+                        />
                       </td>
                     </tr>
                     <tr>
@@ -749,100 +926,216 @@ function App() {
                     <tr>
                       <td>Rs</td>
                       <td>
-                        <input type="number"
+                        <input
+                          type="number"
                           value={sheet?.accountBalance265999891 || ""}
-                          onChange={(e) => setSheet({ ...sheet, accountBalance265999891: +e.target.value })}
+                          onChange={(e) =>
+                            setSheet({
+                              ...sheet,
+                              accountBalance265999891: +e.target.value,
+                            })
+                          }
                         />
                       </td>
                       <td>
-                        <input type="number"
+                        <input
+                          type="number"
                           value={sheet?.accountBalance266001445 || ""}
-                          onChange={(e) => setSheet({ ...sheet, accountBalance266001445: +e.target.value })}
+                          onChange={(e) =>
+                            setSheet({
+                              ...sheet,
+                              accountBalance266001445: +e.target.value,
+                            })
+                          }
                         />
                       </td>
                       <td>
-                        <input type="number" value={sheet?.accountBalance37300247 || ""}
-                          onChange={(e) => setSheet({ ...sheet, accountBalance37300247: +e.target.value })} />
+                        <input
+                          type="number"
+                          value={sheet?.accountBalance37300247 || ""}
+                          onChange={(e) =>
+                            setSheet({
+                              ...sheet,
+                              accountBalance37300247: +e.target.value,
+                            })
+                          }
+                        />
                       </td>
                       <td>
-                        <input type="number" value={sheet?.accountBalance257283991 || ""}
-                          onChange={(e) => setSheet({ ...sheet, accountBalance257283991: +e.target.value })} />
+                        <input
+                          type="number"
+                          value={sheet?.accountBalance257283991 || ""}
+                          onChange={(e) =>
+                            setSheet({
+                              ...sheet,
+                              accountBalance257283991: +e.target.value,
+                            })
+                          }
+                        />
                       </td>
                     </tr>
                     <tr>
                       <td>Deposit</td>
                       <td>
-                        <input type="number"
+                        <input
+                          type="number"
                           value={sheet?.deposit265999891 || ""}
-                          onChange={(e) => setSheet({ ...sheet, deposit265999891: +e.target.value })}
+                          onChange={(e) =>
+                            setSheet({
+                              ...sheet,
+                              deposit265999891: +e.target.value,
+                            })
+                          }
                         />
                       </td>
                       <td>
-                        <input type="number"
+                        <input
+                          type="number"
                           value={sheet?.deposit266001445 || ""}
-                          onChange={(e) => setSheet({ ...sheet, deposit266001445: +e.target.value })}
+                          onChange={(e) =>
+                            setSheet({
+                              ...sheet,
+                              deposit266001445: +e.target.value,
+                            })
+                          }
                         />
                       </td>
                       <td>
-                        <input type="number" value={sheet?.deposit37300247 || ""}
-                          onChange={(e) => setSheet({ ...sheet, deposit37300247: +e.target.value })} />
+                        <input
+                          type="number"
+                          value={sheet?.deposit37300247 || ""}
+                          onChange={(e) =>
+                            setSheet({
+                              ...sheet,
+                              deposit37300247: +e.target.value,
+                            })
+                          }
+                        />
                       </td>
                       <td>
-                        <input type="number" value={sheet?.deposit257283991 || ""}
-                          onChange={(e) => setSheet({ ...sheet, deposit257283991: +e.target.value })} />
+                        <input
+                          type="number"
+                          value={sheet?.deposit257283991 || ""}
+                          onChange={(e) =>
+                            setSheet({
+                              ...sheet,
+                              deposit257283991: +e.target.value,
+                            })
+                          }
+                        />
                       </td>
                     </tr>
                     <tr>
                       <td>Total Rs</td>
                       <td>
-                        <input type="number" disabled value={getTotalAccountBalance(265999891)} />
+                        <input
+                          type="number"
+                          disabled
+                          value={getTotalAccountBalance(265999891)}
+                        />
                       </td>
                       <td>
-                        <input type="number" disabled value={getTotalAccountBalance(266001445)} />
+                        <input
+                          type="number"
+                          disabled
+                          value={getTotalAccountBalance(266001445)}
+                        />
                       </td>
                       <td>
-                        <input type="number" disabled value={getTotalAccountBalance(37300247)} />
+                        <input
+                          type="number"
+                          disabled
+                          value={getTotalAccountBalance(37300247)}
+                        />
                       </td>
                       <td>
-                        <input type="number" disabled value={getTotalAccountBalance(257283991)} />
+                        <input
+                          type="number"
+                          disabled
+                          value={getTotalAccountBalance(257283991)}
+                        />
                       </td>
                     </tr>
                     <tr>
                       <td>Withdrawl</td>
                       <td>
-                        <input type="number"
+                        <input
+                          type="number"
                           value={sheet?.withdrawl265999891 || ""}
-                          onChange={(e) => setSheet({ ...sheet, withdrawl265999891: +e.target.value })}
+                          onChange={(e) =>
+                            setSheet({
+                              ...sheet,
+                              withdrawl265999891: +e.target.value,
+                            })
+                          }
                         />
                       </td>
                       <td>
-                        <input type="number"
+                        <input
+                          type="number"
                           value={sheet?.withdrawl266001445 || ""}
-                          onChange={(e) => setSheet({ ...sheet, withdrawl266001445: +e.target.value })}
+                          onChange={(e) =>
+                            setSheet({
+                              ...sheet,
+                              withdrawl266001445: +e.target.value,
+                            })
+                          }
                         />
                       </td>
                       <td>
-                        <input type="number" value={sheet?.withdrawl37300247 || ""}
-                          onChange={(e) => setSheet({ ...sheet, withdrawl37300247: +e.target.value })} />
+                        <input
+                          type="number"
+                          value={sheet?.withdrawl37300247 || ""}
+                          onChange={(e) =>
+                            setSheet({
+                              ...sheet,
+                              withdrawl37300247: +e.target.value,
+                            })
+                          }
+                        />
                       </td>
                       <td>
-                        <input type="number" value={sheet?.withdrawl257283991 || ""}
-                          onChange={(e) => setSheet({ ...sheet, withdrawl257283991: +e.target.value })} />
+                        <input
+                          type="number"
+                          value={sheet?.withdrawl257283991 || ""}
+                          onChange={(e) =>
+                            setSheet({
+                              ...sheet,
+                              withdrawl257283991: +e.target.value,
+                            })
+                          }
+                        />
                       </td>
                     </tr>
                     <tr>
                       <td>Remaining Balance</td>
                       <td>
-                        <input type="number" disabled value={getRemainingAccountBalance(265999891)} />
+                        <input
+                          type="number"
+                          disabled
+                          value={getRemainingAccountBalance(265999891)}
+                        />
                       </td>
                       <td>
-                        <input type="number" disabled value={getRemainingAccountBalance(266001445)} />
+                        <input
+                          type="number"
+                          disabled
+                          value={getRemainingAccountBalance(266001445)}
+                        />
                       </td>
                       <td>
-                        <input type="number" disabled value={getRemainingAccountBalance(37300247)} />
+                        <input
+                          type="number"
+                          disabled
+                          value={getRemainingAccountBalance(37300247)}
+                        />
                       </td>
                       <td>
-                        <input type="number" disabled value={getRemainingAccountBalance(257283991)} />
+                        <input
+                          type="number"
+                          disabled
+                          value={getRemainingAccountBalance(257283991)}
+                        />
                       </td>
                     </tr>
                   </tbody>
@@ -858,15 +1151,25 @@ function App() {
                     <tr>
                       <td>Total</td>
                       <td>
-                        <input type="number" value={sheet?.totalCards || ""}
-                          onChange={(e) => setSheet({ ...sheet, totalCards: +e.target.value })} />
+                        <input
+                          type="number"
+                          value={sheet?.totalCards || ""}
+                          onChange={(e) =>
+                            setSheet({ ...sheet, totalCards: +e.target.value })
+                          }
+                        />
                       </td>
                     </tr>
                     <tr>
                       <td>Sell</td>
                       <td>
-                        <input type="number" value={sheet?.sellCards || ""}
-                          onChange={(e) => setSheet({ ...sheet, sellCards: +e.target.value })} />
+                        <input
+                          type="number"
+                          value={sheet?.sellCards || ""}
+                          onChange={(e) =>
+                            setSheet({ ...sheet, sellCards: +e.target.value })
+                          }
+                        />
                       </td>
                     </tr>
                     <tr>
@@ -893,14 +1196,18 @@ function App() {
                         <input
                           type="text"
                           value={sheet?.borrow?.[index]?.name || ""}
-                          onChange={(e) => updateBorrowEntry(index, "name", e.target.value)}
+                          onChange={(e) =>
+                            updateBorrowEntry(index, "name", e.target.value)
+                          }
                         />
                       </td>
                       <td>
                         <input
                           type="number"
                           value={sheet?.borrow?.[index]?.amount || ""}
-                          onChange={(e) => updateBorrowEntry(index, "amount", e.target.value)}
+                          onChange={(e) =>
+                            updateBorrowEntry(index, "amount", e.target.value)
+                          }
                         />
                       </td>
                     </tr>
@@ -908,7 +1215,11 @@ function App() {
                   <tr>
                     <td>Total</td>
                     <td>
-                      <input type="number" disabled value={getTotalBorrowed()} />
+                      <input
+                        type="number"
+                        disabled
+                        value={getTotalBorrowed()}
+                      />
                     </td>
                   </tr>
                 </tbody>
@@ -927,14 +1238,18 @@ function App() {
                         <input
                           type="text"
                           value={sheet?.recovery?.[index]?.name || ""}
-                          onChange={(e) => updateRecoveryEntry(index, "name", e.target.value)}
+                          onChange={(e) =>
+                            updateRecoveryEntry(index, "name", e.target.value)
+                          }
                         />
                       </td>
                       <td>
                         <input
                           type="number"
                           value={sheet?.recovery?.[index]?.amount || ""}
-                          onChange={(e) => updateRecoveryEntry(index, "amount", e.target.value)}
+                          onChange={(e) =>
+                            updateRecoveryEntry(index, "amount", e.target.value)
+                          }
                         />
                       </td>
                     </tr>
@@ -942,7 +1257,11 @@ function App() {
                   <tr>
                     <td>Total</td>
                     <td>
-                      <input type="number" disabled value={getTotalRecovery()} />
+                      <input
+                        type="number"
+                        disabled
+                        value={getTotalRecovery()}
+                      />
                     </td>
                   </tr>
                 </tbody>
@@ -974,14 +1293,18 @@ function App() {
                       <input
                         type="text"
                         value={sheet?.omni?.[index]?.sending || ""}
-                        onChange={(e) => updateOmniEntry(index, "sending", e.target.value)}
+                        onChange={(e) =>
+                          updateOmniEntry(index, "sending", e.target.value)
+                        }
                       />
                     </td>
                     <td>
                       <input
                         type="text"
                         value={sheet?.omni?.[index]?.receiving || ""}
-                        onChange={(e) => updateOmniEntry(index, "receiving", e.target.value)}
+                        onChange={(e) =>
+                          updateOmniEntry(index, "receiving", e.target.value)
+                        }
                       />
                     </td>
                   </tr>
@@ -990,19 +1313,31 @@ function App() {
                 <tr>
                   <td>Total Sending</td>
                   <td>
-                    <input type="number" disabled value={getTotalOmniSending()} />
+                    <input
+                      type="number"
+                      disabled
+                      value={getTotalOmniSending()}
+                    />
                   </td>
                 </tr>
                 <tr>
                   <td>Total Receiving</td>
                   <td>
-                    <input type="number" disabled value={getTotalOmniReceiving()} />
+                    <input
+                      type="number"
+                      disabled
+                      value={getTotalOmniReceiving()}
+                    />
                   </td>
                 </tr>
                 <tr>
                   <td>Last Balance</td>
                   <td>
-                    <input type="number" disabled value={extractLastOmniBalance() || ""} />
+                    <input
+                      type="number"
+                      disabled
+                      value={extractLastOmniBalance() || ""}
+                    />
                   </td>
                 </tr>
               </tbody>
@@ -1031,14 +1366,22 @@ function App() {
                       <input
                         type="text"
                         value={sheet?.easypaisa?.[index]?.sending || ""}
-                        onChange={(e) => updateEasyPaisaEntry(index, "sending", e.target.value)}
+                        onChange={(e) =>
+                          updateEasyPaisaEntry(index, "sending", e.target.value)
+                        }
                       />
                     </td>
                     <td>
                       <input
                         type="text"
                         value={sheet?.easypaisa?.[index]?.receiving || ""}
-                        onChange={(e) => updateEasyPaisaEntry(index, "receiving", e.target.value)}
+                        onChange={(e) =>
+                          updateEasyPaisaEntry(
+                            index,
+                            "receiving",
+                            e.target.value
+                          )
+                        }
                       />
                     </td>
                   </tr>
@@ -1047,19 +1390,31 @@ function App() {
                 <tr>
                   <td>Total Sending</td>
                   <td>
-                    <input type="number" disabled value={getTotalEasyPaisaSending()} />
+                    <input
+                      type="number"
+                      disabled
+                      value={getTotalEasyPaisaSending()}
+                    />
                   </td>
                 </tr>
                 <tr>
                   <td>Total Receiving</td>
                   <td>
-                    <input type="number" disabled value={getTotalEasyPaisaReceiving()} />
+                    <input
+                      type="number"
+                      disabled
+                      value={getTotalEasyPaisaReceiving()}
+                    />
                   </td>
                 </tr>
                 <tr>
                   <td>Last Balance</td>
                   <td>
-                    <input type="number" disabled value={extractLastEasyPaisaBalance() || ""} />
+                    <input
+                      type="number"
+                      disabled
+                      value={extractLastEasyPaisaBalance() || ""}
+                    />
                   </td>
                 </tr>
               </tbody>
@@ -1088,14 +1443,22 @@ function App() {
                       <input
                         type="text"
                         value={sheet?.jazzcash?.[index]?.sending || ""}
-                        onChange={(e) => updateJazzCashEntry(index, "sending", e.target.value)}
+                        onChange={(e) =>
+                          updateJazzCashEntry(index, "sending", e.target.value)
+                        }
                       />
                     </td>
                     <td>
                       <input
                         type="text"
                         value={sheet?.jazzcash?.[index]?.receiving || ""}
-                        onChange={(e) => updateJazzCashEntry(index, "receiving", e.target.value)}
+                        onChange={(e) =>
+                          updateJazzCashEntry(
+                            index,
+                            "receiving",
+                            e.target.value
+                          )
+                        }
                       />
                     </td>
                   </tr>
@@ -1104,19 +1467,31 @@ function App() {
                 <tr>
                   <td>Total Sending</td>
                   <td>
-                    <input type="number" disabled value={getTotalJazzCashSending()} />
+                    <input
+                      type="number"
+                      disabled
+                      value={getTotalJazzCashSending()}
+                    />
                   </td>
                 </tr>
                 <tr>
                   <td>Total Receiving</td>
                   <td>
-                    <input type="number" disabled value={getTotalJazzCashReceiving()} />
+                    <input
+                      type="number"
+                      disabled
+                      value={getTotalJazzCashReceiving()}
+                    />
                   </td>
                 </tr>
                 <tr>
                   <td>Last Balance</td>
                   <td>
-                    <input type="number" disabled value={extractLastJazzCashBalance() || ""} />
+                    <input
+                      type="number"
+                      disabled
+                      value={extractLastJazzCashBalance() || ""}
+                    />
                   </td>
                 </tr>
               </tbody>
@@ -1145,14 +1520,22 @@ function App() {
                       <input
                         type="text"
                         value={sheet?.epaccount?.[index]?.sending || ""}
-                        onChange={(e) => updateEPAccountEntry(index, "sending", e.target.value)}
+                        onChange={(e) =>
+                          updateEPAccountEntry(index, "sending", e.target.value)
+                        }
                       />
                     </td>
                     <td>
                       <input
                         type="text"
                         value={sheet?.epaccount?.[index]?.receiving || ""}
-                        onChange={(e) => updateEPAccountEntry(index, "receiving", e.target.value)}
+                        onChange={(e) =>
+                          updateEPAccountEntry(
+                            index,
+                            "receiving",
+                            e.target.value
+                          )
+                        }
                       />
                     </td>
                   </tr>
@@ -1161,19 +1544,31 @@ function App() {
                 <tr>
                   <td>Total Sending</td>
                   <td>
-                    <input type="number" disabled value={getTotalEPAccountSending()} />
+                    <input
+                      type="number"
+                      disabled
+                      value={getTotalEPAccountSending()}
+                    />
                   </td>
                 </tr>
                 <tr>
                   <td>Total Receiving</td>
                   <td>
-                    <input type="number" disabled value={getTotalEPAccountReceiving()} />
+                    <input
+                      type="number"
+                      disabled
+                      value={getTotalEPAccountReceiving()}
+                    />
                   </td>
                 </tr>
                 <tr>
                   <td>Last Balance</td>
                   <td>
-                    <input type="number" disabled value={extractLastEPAccountBalance() || ""} />
+                    <input
+                      type="number"
+                      disabled
+                      value={extractLastEPAccountBalance() || ""}
+                    />
                   </td>
                 </tr>
               </tbody>
@@ -1202,14 +1597,22 @@ function App() {
                       <input
                         type="text"
                         value={sheet?.jcaccount?.[index]?.sending || ""}
-                        onChange={(e) => updateJCAccountEntry(index, "sending", e.target.value)}
+                        onChange={(e) =>
+                          updateJCAccountEntry(index, "sending", e.target.value)
+                        }
                       />
                     </td>
                     <td>
                       <input
                         type="text"
                         value={sheet?.jcaccount?.[index]?.receiving || ""}
-                        onChange={(e) => updateJCAccountEntry(index, "receiving", e.target.value)}
+                        onChange={(e) =>
+                          updateJCAccountEntry(
+                            index,
+                            "receiving",
+                            e.target.value
+                          )
+                        }
                       />
                     </td>
                   </tr>
@@ -1218,19 +1621,31 @@ function App() {
                 <tr>
                   <td>Total Sending</td>
                   <td>
-                    <input type="number" disabled value={getTotalJCAccountSending()} />
+                    <input
+                      type="number"
+                      disabled
+                      value={getTotalJCAccountSending()}
+                    />
                   </td>
                 </tr>
                 <tr>
                   <td>Total Receiving</td>
                   <td>
-                    <input type="number" disabled value={getTotalJCAccountReceiving()} />
+                    <input
+                      type="number"
+                      disabled
+                      value={getTotalJCAccountReceiving()}
+                    />
                   </td>
                 </tr>
                 <tr>
                   <td>Last Balance</td>
                   <td>
-                    <input type="number" disabled value={extractLastJCAccountBalance() || ""} />
+                    <input
+                      type="number"
+                      disabled
+                      value={extractLastJCAccountBalance() || ""}
+                    />
                   </td>
                 </tr>
               </tbody>
@@ -1246,31 +1661,51 @@ function App() {
                 <tr>
                   <td className="text-sm">UBL Omni Rec</td>
                   <td>
-                    <input type="number" disabled value={getTotalOmniReceiving()} />
+                    <input
+                      type="number"
+                      disabled
+                      value={getTotalOmniReceiving()}
+                    />
                   </td>
                 </tr>
                 <tr>
                   <td className="text-sm">EasyPaisa Rec</td>
                   <td>
-                    <input type="number" disabled value={getTotalEasyPaisaReceiving()} />
+                    <input
+                      type="number"
+                      disabled
+                      value={getTotalEasyPaisaReceiving()}
+                    />
                   </td>
                 </tr>
                 <tr>
                   <td className="text-sm">JazzCash Rec</td>
                   <td>
-                    <input type="number" disabled value={getTotalJazzCashReceiving()} />
+                    <input
+                      type="number"
+                      disabled
+                      value={getTotalJazzCashReceiving()}
+                    />
                   </td>
                 </tr>
                 <tr>
                   <td className="text-sm">EP AC 0333 Rec</td>
                   <td>
-                    <input type="number" disabled value={getTotalEPAccountReceiving()} />
+                    <input
+                      type="number"
+                      disabled
+                      value={getTotalEPAccountReceiving()}
+                    />
                   </td>
                 </tr>
                 <tr>
                   <td className="text-sm">JC AC 0307 Rec</td>
                   <td>
-                    <input type="number" disabled value={getTotalJCAccountReceiving()} />
+                    <input
+                      type="number"
+                      disabled
+                      value={getTotalJCAccountReceiving()}
+                    />
                   </td>
                 </tr>
                 {Array.from({ length: 10 }).map((_, index) => (
@@ -1279,14 +1714,26 @@ function App() {
                       <input
                         type="text"
                         value={sheet?.manualpurchsing?.[index]?.name || ""}
-                        onChange={(e) => updateManualPurchasingEntry(index, "name", e.target.value)}
+                        onChange={(e) =>
+                          updateManualPurchasingEntry(
+                            index,
+                            "name",
+                            e.target.value
+                          )
+                        }
                       />
                     </td>
                     <td>
                       <input
                         type="number"
                         value={sheet?.manualpurchsing?.[index]?.amount || ""}
-                        onChange={(e) => updateManualPurchasingEntry(index, "amount", e.target.value)}
+                        onChange={(e) =>
+                          updateManualPurchasingEntry(
+                            index,
+                            "amount",
+                            e.target.value
+                          )
+                        }
                       />
                     </td>
                   </tr>
@@ -1294,7 +1741,11 @@ function App() {
                 <tr>
                   <td>Total</td>
                   <td>
-                    <input type="number" disabled value={getTotalPurchasing()} />
+                    <input
+                      type="number"
+                      disabled
+                      value={getTotalPurchasing()}
+                    />
                   </td>
                 </tr>
               </tbody>
@@ -1313,88 +1764,160 @@ function App() {
                   <td>5000</td>
                   <td>x</td>
                   <td>
-                    <input type="number" value={sheet?.cash5000 || ""}
-                      onChange={(e) => setSheet({ ...sheet, cash5000: +e.target.value })} />
+                    <input
+                      type="number"
+                      value={sheet?.cash5000 || ""}
+                      onChange={(e) =>
+                        setSheet({ ...sheet, cash5000: +e.target.value })
+                      }
+                    />
                   </td>
                   <td>
-                    <input type="number" disabled value={5000 * (sheet?.cash5000 || "")} />
+                    <input
+                      type="number"
+                      disabled
+                      value={5000 * (sheet?.cash5000 || "")}
+                    />
                   </td>
                 </tr>
                 <tr>
                   <td>1000</td>
                   <td>x</td>
                   <td>
-                    <input type="number" value={sheet?.cash1000 || ""}
-                      onChange={(e) => setSheet({ ...sheet, cash1000: +e.target.value })} />
+                    <input
+                      type="number"
+                      value={sheet?.cash1000 || ""}
+                      onChange={(e) =>
+                        setSheet({ ...sheet, cash1000: +e.target.value })
+                      }
+                    />
                   </td>
                   <td>
-                    <input type="number" disabled value={1000 * (sheet?.cash1000 || "")} />
+                    <input
+                      type="number"
+                      disabled
+                      value={1000 * (sheet?.cash1000 || "")}
+                    />
                   </td>
                 </tr>
                 <tr>
                   <td>500</td>
                   <td>x</td>
                   <td>
-                    <input type="number" value={sheet?.cash500 || ""}
-                      onChange={(e) => setSheet({ ...sheet, cash500: +e.target.value })} />
+                    <input
+                      type="number"
+                      value={sheet?.cash500 || ""}
+                      onChange={(e) =>
+                        setSheet({ ...sheet, cash500: +e.target.value })
+                      }
+                    />
                   </td>
                   <td>
-                    <input type="number" disabled value={500 * (sheet?.cash500 || "")} />
+                    <input
+                      type="number"
+                      disabled
+                      value={500 * (sheet?.cash500 || "")}
+                    />
                   </td>
                 </tr>
                 <tr>
                   <td>100</td>
                   <td>x</td>
                   <td>
-                    <input type="number" value={sheet?.cash100 || ""}
-                      onChange={(e) => setSheet({ ...sheet, cash100: +e.target.value })} />
+                    <input
+                      type="number"
+                      value={sheet?.cash100 || ""}
+                      onChange={(e) =>
+                        setSheet({ ...sheet, cash100: +e.target.value })
+                      }
+                    />
                   </td>
                   <td>
-                    <input type="number" disabled value={100 * (sheet?.cash100 || "")} />
+                    <input
+                      type="number"
+                      disabled
+                      value={100 * (sheet?.cash100 || "")}
+                    />
                   </td>
                 </tr>
                 <tr>
                   <td>50</td>
                   <td>x</td>
                   <td>
-                    <input type="number" value={sheet?.cash50 || ""}
-                      onChange={(e) => setSheet({ ...sheet, cash50: +e.target.value })} />
+                    <input
+                      type="number"
+                      value={sheet?.cash50 || ""}
+                      onChange={(e) =>
+                        setSheet({ ...sheet, cash50: +e.target.value })
+                      }
+                    />
                   </td>
                   <td>
-                    <input type="number" disabled value={50 * (sheet?.cash50 || "")} />
+                    <input
+                      type="number"
+                      disabled
+                      value={50 * (sheet?.cash50 || "")}
+                    />
                   </td>
                 </tr>
                 <tr>
                   <td>20</td>
                   <td>x</td>
                   <td>
-                    <input type="number" value={sheet?.cash20 || ""}
-                      onChange={(e) => setSheet({ ...sheet, cash20: +e.target.value })} />
+                    <input
+                      type="number"
+                      value={sheet?.cash20 || ""}
+                      onChange={(e) =>
+                        setSheet({ ...sheet, cash20: +e.target.value })
+                      }
+                    />
                   </td>
                   <td>
-                    <input type="number" disabled value={20 * (sheet?.cash20 || "")} />
+                    <input
+                      type="number"
+                      disabled
+                      value={20 * (sheet?.cash20 || "")}
+                    />
                   </td>
                 </tr>
                 <tr>
                   <td>10</td>
                   <td>x</td>
                   <td>
-                    <input type="number" value={sheet?.cash10 || ""}
-                      onChange={(e) => setSheet({ ...sheet, cash10: +e.target.value })} />
+                    <input
+                      type="number"
+                      value={sheet?.cash10 || ""}
+                      onChange={(e) =>
+                        setSheet({ ...sheet, cash10: +e.target.value })
+                      }
+                    />
                   </td>
                   <td>
-                    <input type="number" disabled value={10 * (sheet?.cash10 || "")} />
+                    <input
+                      type="number"
+                      disabled
+                      value={10 * (sheet?.cash10 || "")}
+                    />
                   </td>
                 </tr>
                 <tr>
                   <td>5</td>
                   <td>x</td>
                   <td>
-                    <input type="number" value={sheet?.cash5 || ""}
-                      onChange={(e) => setSheet({ ...sheet, cash5: +e.target.value })} />
+                    <input
+                      type="number"
+                      value={sheet?.cash5 || ""}
+                      onChange={(e) =>
+                        setSheet({ ...sheet, cash5: +e.target.value })
+                      }
+                    />
                   </td>
                   <td>
-                    <input type="number" disabled value={5 * (sheet?.cash5 || "")} />
+                    <input
+                      type="number"
+                      disabled
+                      value={5 * (sheet?.cash5 || "")}
+                    />
                   </td>
                 </tr>
                 <tr>
@@ -1413,32 +1936,53 @@ function App() {
                 <tr>
                   <td>Previous Cash</td>
                   <td>
-                    <input type="number" value={sheet?.previousCash || ""}
-                      onChange={(e) => setSheet({ ...sheet, previousCash: +e.target.value })} />
+                    <input
+                      type="number"
+                      value={sheet?.previousCash || ""}
+                      onChange={(e) =>
+                        setSheet({ ...sheet, previousCash: +e.target.value })
+                      }
+                    />
                   </td>
                 </tr>
                 <tr>
                   <td>Today Cash</td>
                   <td>
-                    <input type="number" value={getTotalCashToday()} disabled />
+                    <input type="number" value={getCashInfoTotal()} disabled />
                   </td>
                 </tr>
                 <tr>
                   <td>Total Amount</td>
                   <td>
-                    <input type="number" value={getTotalCashInfo()} disabled />
+                    <input
+                      type="number"
+                      value={getCashInfoTotal() + sheet?.previousCash}
+                      disabled
+                    />
                   </td>
                 </tr>
                 <tr>
                   <td>Recovery &amp; Purchasing</td>
                   <td>
-                    <input type="number" value={getTotalRecovery() + getTotalPurchasing()} disabled />
+                    <input
+                      type="number"
+                      value={getTotalPurchasing()}
+                      disabled
+                    />
                   </td>
                 </tr>
                 <tr>
                   <td>Remaining Cash</td>
                   <td>
-                    <input type="number" value={(sheet?.previousCash + getTotalCashToday() + getTotalCashInfo()) - (getTotalRecovery() + getTotalPurchasing())} disabled />
+                    <input
+                      type="number"
+                      value={
+                        getCashInfoTotal() +
+                        sheet?.previousCash -
+                        getTotalPurchasing()
+                      }
+                      disabled
+                    />
                   </td>
                 </tr>
                 <tr />
@@ -1460,7 +2004,12 @@ function App() {
                       className="text-lg"
                       type="number"
                       readOnly
-                      value={getTotalCashToday()}
+                      value={
+                        getTotalCashToday() -
+                        (getCashInfoTotal() +
+                          sheet?.previousCash -
+                          getTotalPurchasing())
+                      }
                     />
                   </td>
                 </tr>
@@ -1480,14 +2029,18 @@ function App() {
                       <input
                         type="text"
                         value={sheet?.redbook?.[index]?.name || ""}
-                        onChange={(e) => updateRedbookEntry(index, "name", e.target.value)}
+                        onChange={(e) =>
+                          updateRedbookEntry(index, "name", e.target.value)
+                        }
                       />
                     </td>
                     <td>
                       <input
                         type="number"
                         value={sheet?.redbook?.[index]?.amount || ""}
-                        onChange={(e) => updateRedbookEntry(index, "amount", e.target.value)}
+                        onChange={(e) =>
+                          updateRedbookEntry(index, "amount", e.target.value)
+                        }
                       />
                     </td>
                   </tr>
@@ -1511,25 +2064,43 @@ function App() {
                 <tr>
                   <td>UBL Omni</td>
                   <td>
-                    <input type="number" disabled value={getTotalOmniSending()} />
+                    <input
+                      type="number"
+                      disabled
+                      value={getTotalOmniSending()}
+                    />
                   </td>
                 </tr>
                 <tr>
                   <td>EasyPaisa</td>
                   <td>
-                    <input type="number" disabled value={getTotalEasyPaisaSending()} />
+                    <input
+                      type="number"
+                      disabled
+                      value={getTotalEasyPaisaSending()}
+                    />
                   </td>
                 </tr>
                 <tr>
                   <td>JazzCash</td>
                   <td>
-                    <input type="number" disabled value={getTotalJazzCashSending()} />
+                    <input
+                      type="number"
+                      disabled
+                      value={getTotalJazzCashSending()}
+                    />
                   </td>
                 </tr>
                 <tr>
                   <td>EasyPaisa &amp; JazzCash Accounts</td>
                   <td>
-                    <input type="number" disabled value={getTotalEPAccountSending() + getTotalJCAccountSending()} />
+                    <input
+                      type="number"
+                      disabled
+                      value={
+                        getTotalEPAccountSending() + getTotalJCAccountSending()
+                      }
+                    />
                   </td>
                 </tr>
                 <tr>
@@ -1541,26 +2112,39 @@ function App() {
                 <tr>
                   <td>Card</td>
                   <td>
-                    <input type="number" disabled value={getTotalCards() * 100} />
+                    <input
+                      type="number"
+                      disabled
+                      value={getTotalCards() * 100}
+                    />
                   </td>
                 </tr>
                 <tr>
                   <td>EasyLoad</td>
                   <td>
-                    <input type="number" disabled value={getTotalELoad() - getTotalBorrowed()} />
+                    <input
+                      type="number"
+                      disabled
+                      value={getTotalELoad() - getTotalBorrowed()}
+                    />
                   </td>
                 </tr>
                 <tr>
                   <td>Extra</td>
                   <td>
-                    <input type="number" value={sheet?.extra || ""}
-                      onChange={(e) => setSheet({ ...sheet, extra: +e.target.value })} />
+                    <input
+                      type="number"
+                      value={sheet?.extra || ""}
+                      onChange={(e) =>
+                        setSheet({ ...sheet, extra: +e.target.value })
+                      }
+                    />
                   </td>
                 </tr>
                 <tr>
                   <td>Total</td>
                   <td>
-                    <input type="number" disabled value={getTotalCashInfo()} />
+                    <input type="number" disabled value={getCashInfoTotal()} />
                   </td>
                 </tr>
               </tbody>
@@ -1569,8 +2153,7 @@ function App() {
         </div>
       </div>
     </div>
-
-  )
+  );
 }
 
-export default App
+export default App;

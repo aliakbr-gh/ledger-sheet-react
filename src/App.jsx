@@ -407,6 +407,51 @@ function App() {
     pdf.save(`KMKCommunicationSheet-${day}-${month}-${year}.pdf`);
   };
 
+  const handleClearSheet = () => {
+    setSheet({
+      ...sheet,
+      telenorOpeningBalance: sheet?.telenorClosingBalance,
+      jazzOpeningBalance: sheet?.jazzClosingBalance,
+      ufoneOpeningBalance: sheet?.ufoneClosingBalance,
+      zongOpeningBalance: sheet?.zongClosingBalance,
+
+      accountBalance265999891: 0,
+      deposit265999891: 0,
+      withdrawl265999891: 0,
+      accountBalance266001445: 0,
+      deposit266001445: 0,
+      withdrawl266001445: 0,
+      accountBalance37300247: 0,
+      deposit37300247: 0,
+      withdrawl37300247: 0,
+
+      totalCards: 0,
+      sellCards: 0,
+
+      borrow: [],
+      recovery: [],
+      omni: [],
+      easypaisa: [],
+      jazzcash: [],
+      epaccount: [],
+      jcaccount: [],
+      manualpurchsing: [],
+      redbook: [],
+
+      previousCash: 0,
+      extra: 0,
+
+      cash5000: 0,
+      cash1000: 0,
+      cash500: 0,
+      cash100: 0,
+      cash50: 0,
+      cash20: 0,
+      cash10: 0,
+      cash5: 0,
+    });
+  };
+
   return (
     <div id="print-area">
       <div className="container">
@@ -428,7 +473,7 @@ function App() {
               <button className="button" onClick={handleDownloadPDF}>
                 Save PDF
               </button>
-              <button className="button-danger" onClick={() => setSheet(null)}>
+              <button className="button-danger" onClick={handleClearSheet}>
                 Clear Sheet
               </button>
             </div>

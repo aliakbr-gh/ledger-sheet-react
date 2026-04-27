@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import { useSheetStore } from "./store";
+import jsPDF from "jspdf";
+import html2canvas from "html2canvas";
 
 function App() {
   const DEBUG = false;
@@ -351,8 +353,49 @@ function App() {
     );
   };
 
+  const handleDownloadPDF = async () => {
+    const element = document.getElementById("print-area");
+
+    const canvas = await html2canvas(element, {
+      scale: 1,
+      useCORS: true,
+    });
+
+    const imgData = canvas.toDataURL("image/png");
+
+    const pdf = new jsPDF({
+      orientation: "landscape",
+      unit: "mm",
+      format: "a4",
+    });
+
+    const pageWidth = 297;
+    const pageHeight = 210;
+    const imgWidth = pageWidth;
+    const imgHeight = (canvas.height * pageWidth) / canvas.width;
+
+    let position = 0;
+
+    if (imgHeight <= pageHeight) {
+      pdf.addImage(imgData, "PNG", 0, 0, imgWidth, imgHeight);
+    } else {
+      let heightLeft = imgHeight;
+      pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
+      heightLeft -= pageHeight;
+
+      while (heightLeft > 0) {
+        position = heightLeft - imgHeight;
+        pdf.addPage();
+        pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
+        heightLeft -= pageHeight;
+      }
+    }
+
+    pdf.save("KMK-Sheet.pdf");
+  };
+
   return (
-    <div>
+    <div id="print-area">
       <div className="container">
         {DEBUG &&
           Object.entries(sheet).map(([key, value]) => (
@@ -369,7 +412,7 @@ function App() {
             <p id="current-date">{dateTime.date}</p>
             <p id="current-time">{dateTime.time}</p>
             <div className="actions">
-              <button className="button">Save Print</button>
+            <button className="button" onClick={handleDownloadPDF}>Save PDF</button>
               <button className="button-danger" onClick={() => setSheet(null)}>
                 Clear Sheet
               </button>

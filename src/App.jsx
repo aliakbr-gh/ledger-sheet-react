@@ -356,12 +356,19 @@ function App() {
   const handleDownloadPDF = async () => {
     const element = document.getElementById("print-area");
 
+    if (!element) return;
+
+    const noPrintEls = document.querySelectorAll(".no-print");
+    noPrintEls.forEach((el) => (el.style.display = "none"));
+
     const canvas = await html2canvas(element, {
-      scale: 1,
+      scale: 2,
       useCORS: true,
     });
 
-    const imgData = canvas.toDataURL("image/png");
+    noPrintEls.forEach((el) => (el.style.display = ""));
+
+    const imgData = canvas.toDataURL("image/jpeg", 2);
 
     const pdf = new jsPDF({
       orientation: "landscape",
@@ -377,21 +384,27 @@ function App() {
     let position = 0;
 
     if (imgHeight <= pageHeight) {
-      pdf.addImage(imgData, "PNG", 0, 0, imgWidth, imgHeight);
+      pdf.addImage(imgData, "JPEG", 0, 0, imgWidth, imgHeight);
     } else {
       let heightLeft = imgHeight;
-      pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
+
+      pdf.addImage(imgData, "JPEG", 0, position, imgWidth, imgHeight);
       heightLeft -= pageHeight;
 
       while (heightLeft > 0) {
         position = heightLeft - imgHeight;
         pdf.addPage();
-        pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
+        pdf.addImage(imgData, "JPEG", 0, position, imgWidth, imgHeight);
         heightLeft -= pageHeight;
       }
     }
 
-    pdf.save("KMK-Sheet.pdf");
+    const now = new Date();
+    const day = String(now.getDate()).padStart(2, "0");
+    const month = String(now.getMonth() + 1).padStart(2, "0");
+    const year = now.getFullYear();
+
+    pdf.save(`KMKCommunicationSheet-${day}-${month}-${year}.pdf`);
   };
 
   return (
@@ -409,10 +422,12 @@ function App() {
             <h1>KMK Communication</h1>
           </div>
           <div className="time-actions-container">
-            <p id="current-date">{dateTime.date}</p>
-            <p id="current-time">{dateTime.time}</p>
-            <div className="actions">
-            <button className="button" onClick={handleDownloadPDF}>Save PDF</button>
+            <h2 id="current-date">{dateTime.date}</h2>
+            <h2 id="current-time">{dateTime.time}</h2>
+            <div className="actions no-print">
+              <button className="button" onClick={handleDownloadPDF}>
+                Save PDF
+              </button>
               <button className="button-danger" onClick={() => setSheet(null)}>
                 Clear Sheet
               </button>
@@ -1873,23 +1888,11 @@ function App() {
                     />
                   </td>
                 </tr>
-                <tr />
-                <tr />
-                <tr />
-                <tr />
-                <tr />
-                <tr />
-                <tr />
-                <tr />
-                <tr />
-                <tr />
-                <tr />
-                <tr />
+                <br />
                 <tr>
-                  <td className="text-lg">Difference</td>
+                  <td>Difference</td>
                   <td>
                     <input
-                      className="text-lg"
                       type="number"
                       readOnly
                       value={
